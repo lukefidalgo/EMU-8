@@ -3,8 +3,6 @@ use std::io::{self, Read};
 
 use rand::Rng;
 
-use crate::stack::Stack;
-
 use crate::DISPLAY_WIDTH;
 use crate::DISPLAY_HEIGHT;
 use crate::DISPLAY_SIZE;
@@ -14,7 +12,7 @@ const PROGRAM_START: usize = 0x200;
 
 pub struct Chip8 {
     ram: [u8; MEMORY_SIZE],
-    stack: Stack,
+    stack: Vec<usize>,
     display_buffer: [u32; DISPLAY_SIZE],
     pub update_window: bool,
     v: [u8; 16],
@@ -29,7 +27,7 @@ impl Chip8 {
     pub fn new() -> Self {
         let mut cpu = Self {
             ram: [0; MEMORY_SIZE],
-            stack: Stack::new(),
+            stack: Vec::new(),
             display_buffer: [0; DISPLAY_SIZE],
             update_window: false,
             v: [0; 16],
@@ -189,7 +187,7 @@ impl Chip8 {
 
     /// Returns from a subrotine.
     fn op_00ee(&mut self) {
-        self.pc = self.stack.pop();
+        self.pc = self.stack.pop().unwrap();
     }
 
     /// Jumps to memory location `nnn`

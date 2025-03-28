@@ -7,7 +7,6 @@ use minifb::{Key, Window, WindowOptions, Scale};
 
 mod chip8;
 mod input;
-mod stack;
 
 use chip8::Chip8;
 use input::*;
