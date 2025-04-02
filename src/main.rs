@@ -54,6 +54,8 @@ fn main() {
             chip8.cycle();
         }
 
+        // 60hz
+        thread::sleep(Duration::from_millis(16));
         if chip8.update_window {
             window.update_with_buffer(
                 chip8.get_display_buffer(),
@@ -63,8 +65,5 @@ fn main() {
         } else {
             window.update();
         }
-
-        // 60hz
-        thread::sleep(Duration::from_millis(16));
     }
 }

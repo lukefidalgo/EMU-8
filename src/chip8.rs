@@ -336,28 +336,42 @@ impl Chip8 {
 
     /// Draws sprite to the screen. Objects out of bounds wrap around the screen.
     fn op_dxyn(&mut self, x: usize, y: usize, n: usize) {
-        let vx = self.v[x] as usize;
-        let vy = self.v[y] as usize;
-        self.v[0xF] = 0;
-    
-        for row in 0..n {
-            let sprite_byte = self.ram[self.i as usize + row];
-            for col in 0..8 {
-                if sprite_byte & (0x80 >> col) != 0 {
-                    let x_coord = (vx + col) % DISPLAY_WIDTH;
-                    let y_coord = (vy + row) % DISPLAY_HEIGHT;
-    
-                    let pixel_index = y_coord * DISPLAY_WIDTH + x_coord;
-    
-                    if self.display_buffer[pixel_index] == 0x0000FF {
-                        self.v[0xF] = 1;
-                    }
+        let x = self.v[x] as usize & 63;
+        let y = self.v[y] as usize & 31;
+        self.v[0xf] = 0;
 
-                    self.display_buffer[pixel_index] ^= 0x0000FF;
+        for row in 0..n {
+            // reached bottom edge of the screen
+            if y + row >= 32 {
+                break;
+            }
+
+            // Check for overflow
+            if self.i as usize + row >= MEMORY_SIZE { break; }
+
+            let sprite_byte = self.ram[self.i as usize + row];
+
+            for col in 0..8 {
+                // reached right edge of the screen
+                if x + col >= 64 {
+                    break;
+                }
+
+                let sprite_pixel = (sprite_byte >> (7 - col)) & 1;
+
+                if sprite_pixel == 1 {
+                    let screen_index = (y + row) * 64 + (x + col);
+
+                    if self.display_buffer[screen_index] == 0x0000FF {
+                        self.display_buffer[screen_index] = 0x000000;
+                        self.v[0xf] = 1;
+                    } else {
+                        self.display_buffer[screen_index] = 0x0000FF;
+                    }
                 }
             }
         }
-    
+
         self.update_window = true;
         self.pc += 2;
     }
