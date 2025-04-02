@@ -16,7 +16,7 @@ pub struct Chip8 {
     display_buffer: [u32; DISPLAY_SIZE],
     pub update_window: bool,
     v: [u8; 16],
-    pub keys: [bool; 16],
+    keys: [bool; 16],
     delay: u8,
     sound: u8,
     i: usize,
