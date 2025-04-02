@@ -341,18 +341,18 @@ impl Chip8 {
         self.v[0xf] = 0;
 
         for row in 0..n {
-            // reached bottom edge of the screen
+            // Reached bottom edge of the screen
             if y + row >= 32 {
                 break;
             }
 
             // Check for overflow
-            if self.i as usize + row >= MEMORY_SIZE { break; }
+            if self.i + row >= MEMORY_SIZE { break; }
 
             let sprite_byte = self.ram[self.i as usize + row];
 
             for col in 0..8 {
-                // reached right edge of the screen
+                // Reached right edge of the screen
                 if x + col >= 64 {
                     break;
                 }
@@ -378,7 +378,8 @@ impl Chip8 {
 
     /// Skips next instruction if a key is pressed.
     fn op_ex9e(&mut self, x: usize) {
-        if self.keys[self.v[x] as usize] == true {
+        let key = self.v[x] & 0x0F;
+        if self.keys[key as usize] {
             self.pc += 4;
         } else {
             self.pc += 2;
@@ -387,7 +388,8 @@ impl Chip8 {
 
     /// Skips next instruction if a key is not pressed.
     fn op_exa1(&mut self, x: usize) {
-        if self.keys[self.v[x] as usize] == false {
+        let key = self.v[x] & 0x0F;
+        if !self.keys[key as usize] {
             self.pc += 4;
         } else {
             self.pc += 2;
@@ -428,7 +430,8 @@ impl Chip8 {
 
     /// Sets `i` register to font pointed to by `VX`
     fn op_fx29(&mut self, x: usize) {
-        self.i = 0x50 + (self.v[x] as usize * 5);
+        let digit = self.v[x] & 0x0F;
+        self.i = 0x50 + (digit as usize * 5);
         self.pc += 2;
     }
 
