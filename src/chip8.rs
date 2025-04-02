@@ -21,6 +21,7 @@ pub struct Chip8 {
     sound: u8,
     i: usize,
     pc: usize,
+    waiting_key: Option<u8>,
 }
 
 impl Chip8 {
@@ -36,6 +37,7 @@ impl Chip8 {
             sound: 0,
             i: 0,
             pc: PROGRAM_START,
+            waiting_key: None,
         };
 
         cpu.load_font();
@@ -402,11 +404,17 @@ impl Chip8 {
         self.pc += 2;
     }
 
-    /// Waits for a key to be pressed. When it is pressed sets `VX` to it.
+    /// Waits for a key to be released. When it is released sets `VX` to it.
     fn op_fx0a(&mut self, x: usize) {
-        if let Some(pressed_key) = self.keys.iter().position(|&state| state) {
-            self.v[x] = pressed_key as u8;
-            self.pc += 2;
+        if let Some(key) = self.waiting_key {
+            if !self.keys[key as usize] {
+                self.v[x] = key;
+                self.waiting_key = None;
+                self.pc += 2;
+            }
+        } 
+        else if let Some(pressed_key) = self.keys.iter().position(|&state| state) {
+            self.waiting_key = Some(pressed_key as u8);
         }
     }
 
