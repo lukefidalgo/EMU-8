@@ -283,8 +283,9 @@ impl Chip8 {
 
     /// Shifts LSB of `VX` to `VF`
     fn op_8xy6(&mut self, x: usize) {
-        self.v[0xf] = self.v[x] & 1;
+        let carry = self.v[x] & 1;
         self.v[x] >>= 1;
+        self.v[0xf] = carry;
         self.pc += 2;
     }
 
@@ -298,8 +299,9 @@ impl Chip8 {
 
     /// Shifts MSB of `VX` to `VF`
     fn op_8xye(&mut self, x: usize) {
-        self.v[0xf] = (self.v[x] & 0b10000000) >> 7;
+        let carry = (self.v[x] & 0b10000000) >> 7;
         self.v[x] <<= 1;
+        self.v[0xf] = carry;
         self.pc += 2;
     }
 
