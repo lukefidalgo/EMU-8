@@ -147,9 +147,9 @@ impl Chip8 {
                 0x3 => self.op_8xy3(x, y),
                 0x4 => self.op_8xy4(x, y),
                 0x5 => self.op_8xy5(x, y),
-                0x6 => self.op_8xy6(x),
+                0x6 => self.op_8xy6(x, y),
                 0x7 => self.op_8xy7(x, y),
-                0xE => self.op_8xye(x),
+                0xE => self.op_8xye(x, y),
                 _ => self.op_unknown(opcode),
             },
             0x9 => self.op_9xy0(x, y),
@@ -249,20 +249,23 @@ impl Chip8 {
         self.pc += 2;
     }
 
-    /// Sets `VX` to `VX OR VY`
+    /// Sets `VX` to `VX OR VY`. Resets the flag.
     fn op_8xy1(&mut self, x: usize, y: usize) {
+        self.v[0xf] = 0;
         self.v[x] |= self.v[y];
         self.pc += 2;
     }
 
-    /// Sets `VX` to `VX AND VY`
+    /// Sets `VX` to `VX AND VY`. Resets the flag.
     fn op_8xy2(&mut self, x: usize, y: usize) {
+        self.v[0xf] = 0;
         self.v[x] &= self.v[y];
         self.pc += 2;
     }
 
-    /// Sets `VX` to `VX XOR VY`
+    /// Sets `VX` to `VX XOR VY`. Resets the flag.
     fn op_8xy3(&mut self, x: usize, y: usize) {
+        self.v[0xf] = 0;
         self.v[x] ^= self.v[y];
         self.pc += 2;
     }
@@ -284,7 +287,8 @@ impl Chip8 {
     }
 
     /// Shifts LSB of `VX` to `VF`
-    fn op_8xy6(&mut self, x: usize) {
+    fn op_8xy6(&mut self, x: usize, y: usize) {
+        self.v[x] = self.v[y];
         let carry = self.v[x] & 1;
         self.v[x] >>= 1;
         self.v[0xf] = carry;
@@ -300,7 +304,8 @@ impl Chip8 {
     }
 
     /// Shifts MSB of `VX` to `VF`
-    fn op_8xye(&mut self, x: usize) {
+    fn op_8xye(&mut self, x: usize, y: usize) {
+        self.v[x] = self.v[y];
         let carry = (self.v[x] & 0b10000000) >> 7;
         self.v[x] <<= 1;
         self.v[0xf] = carry;
@@ -451,19 +456,21 @@ impl Chip8 {
         self.pc += 2;
     }
 
-    /// Stores the contents of the `V` registers up to `x` into memory
+    /// Stores the contents of the `V` registers up to `x` into memory. Incrememnts `i` register.
     fn op_fx55(&mut self, x: usize) {
         for i in 0..x + 1 {
             self.ram[self.i + i] = self.v[i];
         }
+        self.i += x + 1;
         self.pc += 2;
     }
 
-    /// Extracts memory onto the `V` registers up to `x`.
+    /// Extracts memory onto the `V` registers up to `x`. Increments `i` register
     fn op_fx65(&mut self, x: usize) {
         for i in 0..x + 1 {
             self.v[i] = self.ram[self.i + i];
         }
+        self.i += x + 1;
         self.pc += 2;
     }
 
